@@ -1,0 +1,21 @@
+server:
+  address: ":8199"
+  LogPath: "./log"
+  keepAlive: true
+  readTimeout: "60s"                        # 请求读取超时时间，一般不需要配置。默认为60秒
+  writeTimeout: "0"                          # 数据返回写入超时时间，一般不需要配置。默认不超时（0）
+  idleTimeout: "60s"
+  openapiPath: "/api.json"
+  swaggerPath: "/swagger"
+logger:
+  path: "./log"
+  file: "{Y-m-d}.log"
+  Level: "all"
+  Stdout: true
+database:
+  link: "mysql:root:123456@tcp(127.0.0.1:3306)/test"
+  debug: true
+redis:
+  default:
+    address: 127.0.0.1:6379
+    db: 1

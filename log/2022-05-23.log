@@ -1,0 +1,27 @@
+2022-05-23 17:26:07.284 [INFO] openapi specification is disabled 
+
+  ADDRESS | METHOD | ROUTE  |                             HANDLER                             |           MIDDLEWARE             
+----------|--------|--------|-----------------------------------------------------------------|----------------------------------
+  :8199   | ALL    | /*     | github.com/gogf/gf/v2/net/ghttp.internalMiddlewareServerTracing | GLOBAL MIDDLEWARE                
+----------|--------|--------|-----------------------------------------------------------------|----------------------------------
+  :8199   | GET    | /hello | gf-web/internal/controller.(*cHello).Hello                      | ghttp.MiddlewareHandlerResponse  
+----------|--------|--------|-----------------------------------------------------------------|----------------------------------
+ 
+2022-05-23 17:26:07.284 [INFO] pid[38536]: http server started listening on [:8199] 
+2022-05-23 17:32:41.151 [INFO] pid[38536]: all servers shutdown 
+2022-05-23 17:33:43.237 [INFO] swagger ui is serving at address: http://127.0.0.1:8199/swagger/ 
+2022-05-23 17:33:43.238 [INFO] openapi specification is serving at address: http://127.0.0.1:8199/api.json 
+2022-05-23 17:33:43.239 [INFO] pid[38713]: http server started listening on [:8199] 
+
+  ADDRESS | METHOD |   ROUTE    |                             HANDLER                             |           MIDDLEWARE             
+----------|--------|------------|-----------------------------------------------------------------|----------------------------------
+  :8199   | ALL    | /*         | github.com/gogf/gf/v2/net/ghttp.internalMiddlewareServerTracing | GLOBAL MIDDLEWARE                
+----------|--------|------------|-----------------------------------------------------------------|----------------------------------
+  :8199   | ALL    | /api.json  | github.com/gogf/gf/v2/net/ghttp.(*Server).openapiSpec           |                                  
+----------|--------|------------|-----------------------------------------------------------------|----------------------------------
+  :8199   | GET    | /hello     | gf-web/internal/controller.(*cHello).Hello                      | ghttp.MiddlewareHandlerResponse  
+----------|--------|------------|-----------------------------------------------------------------|----------------------------------
+  :8199   | ALL    | /swagger/* | github.com/gogf/gf/v2/net/ghttp.(*Server).swaggerUI             | HOOK_BEFORE_SERVE                
+----------|--------|------------|-----------------------------------------------------------------|----------------------------------
+ 
+2022-05-23 17:35:20.529 [INFO] pid[38713]: all servers shutdown 
