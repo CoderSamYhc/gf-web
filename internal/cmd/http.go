@@ -10,9 +10,8 @@ import (
 )
 
 var (
-	Main = gcmd.Command{
-		Name:  "main",
-		Usage: "main",
+	Http = &gcmd.Command{
+		Name:  "http",
 		Brief: "start http server",
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
 			s := g.Server()
