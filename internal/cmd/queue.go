@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
 	"gf-web/internal/queue"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
@@ -20,7 +19,7 @@ var (
 			if err != nil {
 				panic(err)
 			}
-			q := queue.NewQueue(Rds, ctx)
+			_ := queue.NewQueue(Rds, ctx)
 			defer Rds.Close(ctx)
 			//p := parser.GetOpt("a")
 			//g.Redis().Conn(ctx)
