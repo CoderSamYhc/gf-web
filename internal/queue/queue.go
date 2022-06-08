@@ -2,6 +2,7 @@ package queue
 
 import (
 	"context"
+	"errors"
 	"github.com/gogf/gf/v2/database/gredis"
 	"strings"
 )
@@ -43,6 +44,12 @@ func (q *Queue) GetQueueName(topic, group string) string {
 }
 
 func (q *Queue) RegisterQueue(topic, group string, handler interface{}) error {
+	name := q.GetQueueName(topic, group)
+	if _, ok := q.Handlers[name]; ok {
+		return errors.New("is exits")
+	} else {
+		q.Handlers[name] = handler
+	}
 	return nil
 }
 
