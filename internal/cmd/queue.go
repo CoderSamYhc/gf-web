@@ -25,8 +25,8 @@ var (
 			//p := parser.GetOpt("a")
 			//g.Redis().Conn(ctx)
 			//err = q.Push("test", "msg:test")
-			msg, err := q.Pop("test")
-			fmt.Println(msg, err)
+			//msg, err := q.Pop("test")
+			//fmt.Println(msg, err)
 			return nil
 		},
 	}

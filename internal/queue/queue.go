@@ -8,11 +8,11 @@ import (
 )
 
 type ProductInterface interface {
-	Push(queueName string, message string) error
+	Push(topic, group string, message string) error
 }
 
 type ConsumerInterface interface {
-	Pop(queueName string) (string, error)
+	Pop(topic, group string) (string, error)
 }
 
 type IQueue interface {
@@ -53,16 +53,18 @@ func (q *Queue) RegisterQueue(topic, group string, handler interface{}) error {
 	return nil
 }
 
-func (q *Queue) Push(queueName string, message string) error {
-	_, err := q.Repo.Client.Do(q.Ctx, "LPUSH", queueName, message)
+func (q *Queue) Push(topic, group  string, message string) error {
+	name := q.GetQueueName(topic, group)
+	_, err := q.Repo.Client.Do(q.Ctx, "LPUSH", name, message)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (q *Queue) Pop(queueName string) (string, error) {
-	reply, err := q.Repo.Client.Do(q.Ctx, "LPOP", queueName)
+func (q *Queue) Pop(topic, group  string) (string, error) {
+	name := q.GetQueueName(topic, group)
+	reply, err := q.Repo.Client.Do(q.Ctx, "BRPOP", name)
 	if err != nil {
 		return "", err
 	}
