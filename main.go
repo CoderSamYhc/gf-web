@@ -20,12 +20,12 @@ var (
 )
 
 func main() {
-	err := Main.AddCommand(cmd.Http, cmd.Queue)
+	//err := Main.AddCommand(cmd.Http, cmd.Queue)
 	//cmd.Main.Run(gctx.New())
-	//cmd.Queue.Run(gctx.New())
+	cmd.Queue.Run(gctx.New())
 
-	if err != nil {
-		panic(err)
-	}
-	Main.Run(ctx)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//Main.Run(ctx)
 }

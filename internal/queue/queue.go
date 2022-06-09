@@ -2,34 +2,56 @@ package queue
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/gogf/gf/v2/database/gredis"
 	"strings"
 )
 
-type ProductInterface interface {
-	Push(topic, group string, message string) error
-}
+
 
 type ConsumerInterface interface {
-	Pop(topic, group string) (string, error)
+	Execute(payload *QueuePayload) *QueueResult
 }
 
+// 队列接口
 type IQueue interface {
-	ProductInterface
-	ConsumerInterface
+	Push(payload *QueuePayload) error
+	Pop(rcData *RecoverData) error
 }
 
+// 消息载体
+type QueuePayload struct {
+	Topic string `json:"topic"`
+	Group string `json:"group"`
+	Body interface{} `json:"body"`
+}
 
+// 执行结果
+type QueueResult struct {
+	State bool `json:"state"`
+	Message string `json:"message"`
+	Data interface{} `json:"data"`
+}
 
+// 队列基础服务
 type Repo struct {
 	Client *gredis.RedisConn
 }
 
+// 队列管理器
 type Queue struct {
 	Repo *Repo
 	Ctx context.Context
-	Handlers map[string]interface{}
+	Handlers map[string]ConsumerInterface
+	RecoverCh chan RecoverData
+}
+
+type RecoverData struct {
+	Topic string
+	Group string
+	Handler ConsumerInterface
 }
 
 func (q *Queue) GetQueueName(topic, group string) string {
@@ -43,35 +65,63 @@ func (q *Queue) GetQueueName(topic, group string) string {
 	return name
 }
 
-func (q *Queue) RegisterQueue(topic, group string, handler interface{}) error {
+func (q *Queue) RegisterQueue(topic, group string, handler ConsumerInterface) error {
 	name := q.GetQueueName(topic, group)
+
 	if _, ok := q.Handlers[name]; ok {
 		return errors.New("is exits")
 	} else {
 		q.Handlers[name] = handler
+		q.RecoverCh<-RecoverData{topic, group, handler}
+		fmt.Println(55)
+
 	}
 	return nil
 }
 
-func (q *Queue) Push(topic, group  string, message string) error {
-	name := q.GetQueueName(topic, group)
-	_, err := q.Repo.Client.Do(q.Ctx, "LPUSH", name, message)
+func (q *Queue) Push(payload *QueuePayload) error {
+
+	payloadStr, _ := json.Marshal(payload)
+	_, err := q.Repo.Client.Do(q.Ctx, "LPUSH", q.GetQueueName(payload.Topic, payload.Topic), payloadStr)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (q *Queue) Pop(topic, group  string) (string, error) {
-	name := q.GetQueueName(topic, group)
+func (q *Queue) Pop(rcData *RecoverData) error {
+
+	fmt.Println(rcData)
+
+	name := q.GetQueueName(rcData.Topic, rcData.Group)
+	handler, ok := q.Handlers[name];
+	if !ok {
+		return errors.New("Execute Not Register")
+	}
+
 	reply, err := q.Repo.Client.Do(q.Ctx, "BRPOP", name)
 	if err != nil {
-		return "", err
+		return err
 	}
-	return reply.String(), nil
+	resStr := reply.String()
+	if len(resStr) > 0 {
+		var payload QueuePayload
+		err := json.Unmarshal([]byte(resStr), &payload)
+		if err != nil {
+			return err
+		}
+		res := handler.Execute(&payload)
+		fmt.Println(res)
+	}
+
+	return errors.New("data err")
 }
 
-func NewQueue(rd *gredis.RedisConn, ctx context.Context) Queue {
+func (q *Queue) SetRecoverCh(ch chan RecoverData) {
+	q.RecoverCh = ch
+}
+
+func NewQueue(rd *gredis.RedisConn, ctx context.Context) *Queue {
 
 	redisRepo := &Repo{
 		Client: rd,
@@ -79,8 +129,9 @@ func NewQueue(rd *gredis.RedisConn, ctx context.Context) Queue {
 	queue := Queue{
 		Repo: redisRepo,
 		Ctx: ctx,
+		Handlers: make(map[string]ConsumerInterface),
 	}
 
-	return queue
+	return &queue
 }
 

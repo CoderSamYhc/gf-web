@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"gf-web/internal/queue"
+	"gf-web/internal/queue/user"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcmd"
 )
@@ -16,16 +18,37 @@ var (
 		Func: func(ctx context.Context, parser *gcmd.Parser) (err error) {
 
 			Rds, err := g.Redis().Conn(ctx)
+			fmt.Println(11)
+
 			if err != nil {
 				panic(err)
 			}
-			_ := queue.NewQueue(Rds, ctx)
+			q := queue.NewQueue(Rds, ctx)
+			fmt.Println(44)
+
 			defer Rds.Close(ctx)
-			//p := parser.GetOpt("a")
-			//g.Redis().Conn(ctx)
-			//err = q.Push("test", "msg:test")
-			//msg, err := q.Pop("test")
-			//fmt.Println(msg, err)
+
+			rcLis := make(chan queue.RecoverData, 5)
+			q.SetRecoverCh(rcLis)
+			err = q.RegisterQueue("demo", "demo1", &user.UserLoginQueue{})
+			fmt.Println(22)
+
+			if err != nil {
+				panic(err)
+			}
+			err = q.Push(&queue.QueuePayload{"demo", "demo1", "body"})
+			if err != nil {
+				panic(err)
+			}
+			fmt.Println(33)
+			for  {
+				select {
+				case rcData := <- q.RecoverCh:
+					err := q.Pop(&rcData)
+					fmt.Println(err)
+				}
+			}
+
 			return nil
 		},
 	}
