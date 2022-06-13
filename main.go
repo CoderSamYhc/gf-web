@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "gf-web/internal/packed"
+	"gf-web/internal/queue"
 	"github.com/gogf/gf/v2/os/gcmd"
 
 	"github.com/gogf/gf/v2/os/gctx"
@@ -20,12 +21,11 @@ var (
 )
 
 func main() {
-	//err := Main.AddCommand(cmd.Http, cmd.Queue)
-	//cmd.Main.Run(gctx.New())
-	cmd.Queue.Run(gctx.New())
-
-	//if err != nil {
-	//	panic(err)
-	//}
-	//Main.Run(ctx)
+	err := Main.AddCommand(cmd.Http, cmd.QueueService)
+	if err != nil {
+		panic(err)
+	}
+	q := queue.NewQueue(ctx)
+	defer q.Repo.Client.Close(ctx)
+	Main.Run(ctx)
 }
