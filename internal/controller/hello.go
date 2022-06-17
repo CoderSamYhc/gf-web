@@ -16,8 +16,7 @@ type cHello struct{}
 
 func (c *cHello) Hello(ctx context.Context, req *v1.HelloReq) (res *v1.HelloRes, err error) {
 
-	queue.QM.Ctx = ctx
-	err = queue.QM.Push(&queue.QueuePayload{"demo", "demo1", "body"})
+	err = queue.QM.Push(ctx, &queue.QueuePayload{"demo", "demo1", "body"})
 
 	g.RequestFromCtx(ctx).Response.Writeln("Hello World!")
 	return

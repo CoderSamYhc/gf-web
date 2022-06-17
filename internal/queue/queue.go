@@ -44,8 +44,7 @@ type Repo struct {
 // 队列管理器
 type Queue struct {
 	Repo *Repo
-	Ctx context.Context
-	Handlers map[string]ConsumerInterface
+	Handlers map[string]RecoverData
 	RecoverCh chan RecoverData
 }
 
@@ -53,7 +52,6 @@ type RecoverData struct {
 	Topic   string
 	Group   string
 	Handler ConsumerInterface
-	Length  int
 }
 
 func (q *Queue) GetQueueName(topic, group string) string {
@@ -78,34 +76,27 @@ func (q *Queue) RegisterQueue(topic, group string, handler interface{}) error {
 	if _, ok := q.Handlers[name]; ok {
 		return errors.New("is exits")
 	} else {
-		q.Handlers[name] = h
-		q.RecoverCh<-RecoverData{topic, group, h, 1}
-
+		q.Handlers[name] = RecoverData{
+			Topic: topic,
+			Group: group,
+			Handler: h,
+		}
 	}
 	return nil
 }
 
-func (q *Queue) Push(payload *QueuePayload) error {
+func (q *Queue) Push(ctx context.Context, payload *QueuePayload) error {
 
 	payloadStr, _ := json.Marshal(payload)
 	name := q.GetQueueName(payload.Topic, payload.Group)
-	_, err := q.Repo.Client.Do(q.Ctx, "LPUSH", name, payloadStr)
+	_, err := q.Repo.Client.Do(ctx, "LPUSH", name, payloadStr)
 	if err != nil {
 		return err
-	}
-	if _, ok := q.Handlers[name]; !ok {
-		return errors.New("handler is not exits")
-	}
-	q.RecoverCh<-RecoverData{
-		Topic: payload.Topic,
-		Group: payload.Group,
-		Handler: q.Handlers[name],
-		Length: 1,
 	}
 	return nil
 }
 
-func (q *Queue) Pop(rcData *RecoverData) error {
+func (q *Queue) Pop(ctx context.Context,rcData *RecoverData) error {
 
 	name := q.GetQueueName(rcData.Topic, rcData.Group)
 	handler, ok := q.Handlers[name];
@@ -117,7 +108,7 @@ func (q *Queue) Pop(rcData *RecoverData) error {
 	//	return err
 	//}
 
-	reply, err := q.Repo.Client.Do(q.Ctx, "rpop", name)
+	reply, err := q.Repo.Client.Do(ctx, "rpop", name)
 	if err != nil {
 		return err
 	}
@@ -128,19 +119,30 @@ func (q *Queue) Pop(rcData *RecoverData) error {
 		if err != nil {
 			return err
 		}
-		res := handler.Execute(&payload)
+		res := handler.Handler.Execute(&payload)
 		fmt.Println(res)
 	}
-	//if _, ok := q.Handlers[name]; !ok {
-	//	return errors.New("handler is not exits")
-	//}
-	//q.RecoverCh<-RecoverData{rcData.Topic, rcData.Group, q.Handlers[name], length.Int()}
 	return errors.New("data err")
 }
 
 func (q *Queue) SetRecoverCh(ch chan RecoverData) {
 	q.RecoverCh = ch
 }
+
+func (q *Queue) HandleRecover(ctx context.Context) {
+	for  {
+		for queueName, handler := range q.Handlers {
+			length, err := q.Repo.Client.Do(ctx, "llen", queueName)
+			if err != nil {
+				fmt.Println(err.Error())
+			}
+			if length.Int() > 0 {
+				q.RecoverCh <- handler
+			}
+		}
+	}
+}
+
 
 func NewQueue(ctx context.Context) *Queue {
 
@@ -154,8 +156,7 @@ func NewQueue(ctx context.Context) *Queue {
 	}
 	queue := Queue{
 		Repo: redisRepo,
-		Ctx: ctx,
-		Handlers: make(map[string]ConsumerInterface),
+		Handlers: make(map[string]RecoverData),
 	}
 
 	QM = &queue
