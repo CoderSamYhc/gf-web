@@ -7,6 +7,7 @@ import (
 	"gf-web/internal/consts"
 	"gf-web/internal/model/entity"
 	"gf-web/internal/service"
+	"gf-web/utility"
 )
 
 var (
@@ -23,7 +24,7 @@ func (u *cUser) Info(ctx context.Context, params *v1.UserInfoReq) (res *v1.UserI
 			Ctx: ctx,
 		}
 	)
-
+	utility.NewClickHouse()
 	user, err = service.UserService().Info(ctx, params.Id)
 	if err != nil {
 		r.Error(consts.ERROR, err.Error())
