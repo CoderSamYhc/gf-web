@@ -24,7 +24,7 @@ func (u *cUser) Info(ctx context.Context, params *v1.UserInfoReq) (res *v1.UserI
 			Ctx: ctx,
 		}
 	)
-	utility.NewClickHouse()
+	utility.NewClickHouse(ctx)
 	user, err = service.UserService().Info(ctx, params.Id)
 	if err != nil {
 		r.Error(consts.ERROR, err.Error())

@@ -21,4 +21,11 @@ func init() {
 			controller.User,
 		)
 	})
+
+	s.Group("/ck", func(group *ghttp.RouterGroup) {
+		group.Middleware(ghttp.MiddlewareHandlerResponse)
+		group.Bind(
+			controller.Ck,
+		)
+	})
 }
