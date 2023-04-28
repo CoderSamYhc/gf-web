@@ -11,3 +11,11 @@ type CkReq struct {
 type ShowTablesRes struct {
 	*entity.ShowTables
 }
+
+type ListReq struct {
+	g.Meta `path:"/list" tags:"ck" method:"get" summary:"You first hello api"`
+}
+
+type ListRes struct {
+	Data []*entity.Test
+}

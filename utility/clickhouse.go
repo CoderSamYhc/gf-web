@@ -102,3 +102,22 @@ func (ck *ClickHouse) ShowTables(ctx context.Context) (result entity.ShowTables,
 	return result, nil
 
 }
+
+func (ck *ClickHouse) Query(ctx context.Context) (result []*entity.Test, err error) {
+	rows, err := ck.client.Query(ctx, "SELECT * FROM test")
+	if err != nil {
+		return result, err
+	}
+
+	for rows.Next() {
+		var row entity.Test
+		err = rows.ScanStruct(&row)
+		if err != nil {
+			return result, err
+		}
+		fmt.Println(row.CreateDate.Location().String())
+		result = append(result, &row)
+	}
+	return result, nil
+
+}
