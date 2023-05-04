@@ -9,7 +9,7 @@ type CkReq struct {
 	g.Meta `path:"/" tags:"ck" method:"get" summary:"You first hello api"`
 }
 type ShowTablesRes struct {
-	*entity.ShowTables
+	Data []*entity.ShowTables `json:"data"`
 }
 
 type ListReq struct {

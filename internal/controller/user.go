@@ -7,24 +7,22 @@ import (
 	"gf-web/internal/consts"
 	"gf-web/internal/model/entity"
 	"gf-web/internal/service"
-	"gf-web/utility"
 )
 
 var (
 	User = cUser{}
 )
 
-type cUser struct {}
+type cUser struct{}
 
 func (u *cUser) Info(ctx context.Context, params *v1.UserInfoReq) (res *v1.UserInfoRes, err error) {
 
 	var (
 		user *entity.User
-		r = common.Response{
+		r    = common.Response{
 			Ctx: ctx,
 		}
 	)
-	utility.NewClickHouse(ctx)
 	user, err = service.UserService().Info(ctx, params.Id)
 	if err != nil {
 		r.Error(consts.ERROR, err.Error())

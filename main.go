@@ -9,22 +9,22 @@ import (
 	"github.com/gogf/gf/v2/os/gctx"
 
 	"gf-web/internal/cmd"
+	_ "github.com/gogf/gf/contrib/drivers/clickhouse/v2"
+	_ "github.com/gogf/gf/contrib/drivers/mysql/v2"
 )
 
 var (
 	Main = &gcmd.Command{
-		Name: "main",
-		Brief: "start http server",
+		Name:        "main",
+		Brief:       "start http server",
 		Description: "this is the command entry for starting your process",
 	}
 
-	ctx = gctx.New()
+	ctx       = gctx.New()
 	QueueList = make(map[string]interface{})
-
 )
 
 func main() {
-
 
 	q := queue.NewQueue(ctx)
 	defer q.Repo.Client.Close(ctx)

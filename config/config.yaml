@@ -13,14 +13,13 @@ logger:
   Level: "all"
   Stdout: true
 database:
-  link: "mysql:root:123456@tcp(127.0.0.1:3306)/test"
-  debug: true
+  default:
+    link: "mysql:root:123456@tcp(127.0.0.1:3306)/test?loc=Local&parseTime=true"
+    debug: true
+  clickhouse:
+    link: "clickhouse:default:123456@tcp(127.0.0.1:9005)/local-test"
+    debug: true
 redis:
   default:
     address: 127.0.0.1:6379
     db: 1
-ck:
-  address: ["127.0.0.1:9005"]
-  database: "local-test"
-  username: "default"
-  password: ""
